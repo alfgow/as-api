@@ -80,4 +80,31 @@ index 0000000000000000000000000000000000000000..83d6c928878c31d7f71113baab5e4525
     +4. **Subir configuración base:** Confirmar que el primer push incluya la estructura limpia del framework, la configuración de conexión y un README que explique el propósito del servicio.
     +5. **Preparar CI/CD inicial:** Añadir workflow mínimo (por ejemplo, GitHub Actions) que ejecute `composer install` y `php artisan config:cache` para asegurar que el esqueleto compila desde el día uno.
     +6. **Etiquetar versión inicial:** Crear etiqueta `v0.1.0` tras verificar que la app carga localmente y que los endpoints de salud responden, dejando base clara para futuras iteraciones.
+
+## Solución al 500 en `/health/db`
+
+Cuando la aplicación no tiene variables de entorno configuradas, el health check intenta conectarse usando valores vacíos y termina lanzando una excepción de conexión, por lo que siempre devuelve `500`. Sigue estos pasos para depurarlo:
+
+1. Copia el archivo `.env.example` a `.env`, ejecuta `php artisan key:generate` para poblar `APP_KEY` y rellena `DB_CONNECTION`, `DB_HOST`, `DB_PORT`, `DB_DATABASE`, `DB_USERNAME` y `DB_PASSWORD` con credenciales reales.
+2. Ejecuta `php artisan config:clear` cada vez que cambies las variables para asegurarte de que Laravel lea los nuevos valores.
+3. Activa `APP_DEBUG=true` temporalmente en local para ver el stack trace completo del error.
+4. Revisa `storage/logs/laravel.log`; ahora la ruta `GET /health/db` registra el fallo de conexión con el nombre del driver configurado.
+5. Si quieres validar manualmente, corre `php artisan tinker` y ejecuta `DB::connection()->getPdo();` para confirmar que la credencial responde antes de pegarle al endpoint.
+
+### Estructura base del `.env`
+
+El archivo `.env.example` ya está versionado con todos los valores esperados por Laravel. Esta es la estructura relevante para que puedas guiarte al rellenarlo:
+
+| Bloque | Variables clave | Descripción |
+|--------|-----------------|-------------|
+| App | `APP_NAME`, `APP_ENV`, `APP_KEY`, `APP_DEBUG`, `APP_URL` | Identidad y modo de ejecución; genera el `APP_KEY` antes de servir rutas para evitar el 500. |
+| Logging | `LOG_CHANNEL`, `LOG_LEVEL` | Configura a qué canales se envían los logs y qué nivel mínimo se registra. |
+| Base de datos | `DB_CONNECTION`, `DB_HOST`, `DB_PORT`, `DB_DATABASE`, `DB_USERNAME`, `DB_PASSWORD` | Credenciales exactas para MySQL (o el driver que uses); son indispensables para `/health/db`. |
+| Cache/colas | `CACHE_DRIVER`, `QUEUE_CONNECTION`, `SESSION_DRIVER` | Puedes dejarlos con `file`/`sync` en desarrollo; ajústalos si usas Redis o SQS. |
+| Redis | `REDIS_HOST`, `REDIS_PASSWORD`, `REDIS_PORT` | Solo si habilitas Redis para cache/colas. |
+| Correo | `MAIL_*` | Parámetros del servidor SMTP usado para notificaciones. |
+| AWS/S3 | `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_DEFAULT_REGION`, `AWS_BUCKET` | Requeridos al subir documentos a S3. |
+| Pusher/Broadcast | `PUSHER_*` | Solo necesarios si activas broadcasting en tiempo real. |
+
+Duplica `.env.example`, rellena cada bloque con tus credenciales y vuelve a ejecutar `php artisan config:clear` para que Laravel reconozca el nuevo archivo.
 -
