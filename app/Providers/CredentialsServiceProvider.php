@@ -19,6 +19,7 @@ class CredentialsServiceProvider extends ServiceProvider
         // Sobreescribe configuración base
         config([
             'app.url' => $c['app']['url'] ?? config('app.url'),
+            'app.key' => $c['app']['key'] ?? config('app.key'),
 
             'database.connections.mysql.host'     => $c['database']['host'],
             'database.connections.mysql.port'     => $c['database']['port'],
