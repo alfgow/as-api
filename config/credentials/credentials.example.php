@@ -2,6 +2,7 @@
 return [
     'app' => [
         'url' => 'https://tu-dominio.com',
+        'key' => 'base64:coloca-tu-app-key-aqui=',
     ],
     'database' => [
         'host'     => '',
