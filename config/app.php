@@ -1,5 +1,19 @@
 <?php
 
+$credentials = [];
+
+$credentialFiles = [
+    __DIR__ . '/credentials/credentials.local.php',
+    __DIR__ . '/credentials/credentials.php',
+];
+
+foreach ($credentialFiles as $file) {
+    if (file_exists($file)) {
+        $credentials = require $file;
+        break;
+    }
+}
+
 return [
 
     /*
@@ -52,7 +66,7 @@ return [
     |
     */
 
-    'url' => env('APP_URL', 'http://localhost'),
+    'url' => env('APP_URL', $credentials['app']['url'] ?? 'http://localhost'),
 
     /*
     |--------------------------------------------------------------------------
@@ -97,7 +111,7 @@ return [
 
     'cipher' => 'AES-256-CBC',
 
-    'key' => env('APP_KEY'),
+    'key' => env('APP_KEY', $credentials['app']['key'] ?? null),
 
     'previous_keys' => [
         ...array_filter(

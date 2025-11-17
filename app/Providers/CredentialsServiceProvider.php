@@ -8,9 +8,9 @@ class CredentialsServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
-        $path = config_path('credentials/credentials.local.php');
+        $path = $this->credentialsPath();
 
-        if (! file_exists($path)) {
+        if ($path === null) {
             return;
         }
 
@@ -60,5 +60,21 @@ class CredentialsServiceProvider extends ServiceProvider
     public function boot(): void
     {
         //
+    }
+
+    private function credentialsPath(): ?string
+    {
+        $paths = [
+            config_path('credentials/credentials.local.php'),
+            config_path('credentials/credentials.php'),
+        ];
+
+        foreach ($paths as $path) {
+            if (file_exists($path)) {
+                return $path;
+            }
+        }
+
+        return null;
     }
 }
